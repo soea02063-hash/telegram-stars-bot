@@ -1,7 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-‎const token = '8918147171:AAG5yp36aps-C4vN2z5seF62qRtBh399g9U'; 
-‎const MERCHANT_TON_WALLET = 'UQBOX11KteGifZymS8X8NRERrB41Dz8Utv0JSxvAQ6uDkhc7'; 
+
+// ⚠️ Replace these with your actual details
+const token = '8918147171:AAG5yp36aps-C4vN2z5seF62qRtBh399g9U'; 
+const MERCHANT_TON_WALLET = 'UQBOX11KteGifZymS8X8NRERrB41Dz8Utv0JSxvAQ6uDkhc7'; 
+
 const bot = new TelegramBot(token, { polling: true });
 const STAR_PRICE_IN_TON = 0.015; // TON price per 1 Star
 
