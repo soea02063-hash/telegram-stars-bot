@@ -1,10 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
 
-// ⚠️ Replace these with your actual details
+// ⚠️ Configurations
 const token = '8918147171:AAG5yp36aps-C4vN2z5seF62qRtBh399g9U'; 
 const MERCHANT_TON_WALLET = 'UQBOX11KteGifZymS8X8NRERrB41Dz8Utv0JSxvAQ6uDkhc7'; 
 
+// Telegram Bot initialization
 const bot = new TelegramBot(token, { polling: true });
 const STAR_PRICE_IN_TON = 0.015; // TON price per 1 Star
 
@@ -17,8 +17,11 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
+    // Ignore commands like /start
+    if (text.startsWith('/')) return;
+
     if (isNaN(text) || parseInt(text) <= 0) {
-        if (text !== '/start') bot.sendMessage(chatId, "❌ Please enter a valid number.");
+        bot.sendMessage(chatId, "❌ Please enter a valid number.");
         return;
     }
 
@@ -36,8 +39,13 @@ bot.on('message', async (msg) => {
 🏦 **Wallet Address:** \`${MERCHANT_TON_WALLET}\`
 📝 **Comment/Memo:** \`${uniqueMemo}\`
 
-*System is listening to the blockchain for your payment...*
+*🔄 System is now listening to the blockchain for your payment...*
     `;
 
     bot.sendMessage(chatId, paymentMessage, { parse_mode: 'Markdown' });
+
+    // Simulate payment check for preview
+    setTimeout(() => {
+        bot.sendMessage(chatId, "ℹ️ *Demo Mode:* Real-time payment verification requires actual TON Center API and Stars Provider API integration.");
+    }, 3000);
 });
