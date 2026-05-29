@@ -1,0 +1,14 @@
+package.json
+{
+  "name": "telegram-stars-bot",
+  "version": "1.0.0",
+  "description": "Telegram Stars Topup Bot via TON",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "axios": "^1.7.2"
+  }
+}
