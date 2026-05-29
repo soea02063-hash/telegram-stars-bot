@@ -1,8 +1,12 @@
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 
 // ⚠️ Configurations
 const token = '8918147171:AAG5yp36aps-C4vN2z5seF62qRtBh399g9U'; 
 const MERCHANT_TON_WALLET = 'UQBOX11KteGifZymS8X8NRERrB41Dz8Utv0JSxvAQ6uDkhc7'; 
+
+// ⚠️ TON Center API Key
+const TON_CENTER_API_KEY = '8ed5cc6829a89bd87168e20a423316c0b796d14037600468c987972a8a32c6f0'; 
 
 // Telegram Bot initialization
 const bot = new TelegramBot(token, { polling: true });
@@ -39,13 +43,48 @@ bot.on('message', async (msg) => {
 🏦 **Wallet Address:** \`${MERCHANT_TON_WALLET}\`
 📝 **Comment/Memo:** \`${uniqueMemo}\`
 
-*🔄 System is now listening to the blockchain for your payment...*
+*🔄 System is now listening to the blockchain for your payment (Expires in 5 minutes)...*
     `;
 
     bot.sendMessage(chatId, paymentMessage, { parse_mode: 'Markdown' });
 
-    // Simulate payment check for preview
-    setTimeout(() => {
-        bot.sendMessage(chatId, "ℹ️ *Demo Mode:* Real-time payment verification requires actual TON Center API and Stars Provider API integration.");
-    }, 3000);
+    // Start checking for payment on the blockchain
+    checkPaymentInterval(chatId, tonRequired, uniqueMemo, starsAmount);
 });
+
+// Function to scan blockchain every 10 seconds automatically
+function checkPaymentInterval(chatId, tonRequired, uniqueMemo, starsAmount) {
+    let attempts = 0;
+    const interval = setInterval(async () => {
+        attempts++;
+        if (attempts > 30) { // Stop checking after 5 minutes
+            clearInterval(interval);
+            bot.sendMessage(chatId, "❌ Payment timeout. Your order has been canceled. Please try again.");
+            return;
+        }
+
+        try {
+            // Fetch recent transactions using official TON Center API endpoint
+            const response = await axios.get(`https://toncenter.com{MERCHANT_TON_WALLET}&limit=10&api_key=${TON_CENTER_API_KEY}`);
+            const transactions = response.data.result;
+
+            for (let tx of transactions) {
+                const inMsg = tx.in_msg;
+                // Match the unique memo/comment sent by the user
+                if (inMsg && inMsg.message === uniqueMemo) {
+                    const valueInNanoton = inMsg.value;
+                    const valueInTon = valueInNanoton / 1000000000;
+
+                    // Verify if the paid amount is sufficient
+                    if (valueInTon >= parseFloat(tonRequired)) {
+                        clearInterval(interval);
+                        bot.sendMessage(chatId, `✅ Payment detected! You have successfully paid ${valueInTon} TON.\n\n*Note:* Automated Stars distribution will happen once your Stars Provider API is integrated!`);
+                        return;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("TON API Error:", error.message);
+        }
+    }, 10000); // Check every 10 seconds
+}
